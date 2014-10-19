@@ -1,0 +1,296 @@
+<html>
+<head>
+<style type="text/css">
+  body {
+    background-color: #FFFFFF;
+    font-size: 12px
+  }
+  h1 {
+    font-family: arial, verdana, sans-serif;
+    font-size: 30px;
+    color: #0000ff;
+ 
+  }
+</style>
+<script language="JavaScript">
+/*
+ *  Status codes
+ */
+var c_gameISNotRunning = 0;
+var c_gameISRunning    = 1;
+var c_gameEndGiveUp    = 2;
+var c_gameEndWrongMove = 3;
+var c_gameBetweenMove  = 4;
+ 
+var m_arrSeq      = new Array();
+var m_iBestScore  = 0;
+var m_iGameStep   = 0;
+var m_iGameMove   = 0;
+var m_slideDelay  = 0;
+var m_totalItems  = 4;
+var m_curIndex    = 0;
+var m_curSlide    = 0;
+var m_isShowAllSeq= false;
+var m_isShowSlide = false;
+var m_status      =  c_gameISNotRunning;
+ 
+var m_img1 =new Image();
+var m_img2 =new Image();
+ 
+m_img1.src="green-ball.gif";
+m_img2.src="red-ball.gif";
+ 
+function getRandom(maxValue)
+{
+    var ranNum= Math.floor(Math.random() * maxValue);
+    return ranNum;
+}
+ 
+function showAll()
+{
+    m_slideDelay = 0;
+    m_curIndex   = 0;
+    m_curSlide   = 0;
+    m_isShowAllSeq = true;
+    m_isShowSlide  = true;
+    showMoveLevel();
+}
+ 
+function startPlay()
+{
+    document.getElementById("cmdGiveUp").disabled = true;
+    document.getElementById("cmdStart").disabled  = false;
+    timerStep();
+}
+ 
+function startGame()
+{
+    document.getElementById("cmdGiveUp").disabled = false;
+    document.getElementById("cmdStart").disabled  = true;
+    m_status    = c_gameISRunning;
+    m_iGameStep = 0;
+    startGameStep();
+}
+ 
+function showMoveLevel()
+{
+    var i = m_curIndex + 1;
+    var s = "Move: <b>"+ i + "</b>, Level: <b>"+m_iGameStep + "</b>";
+    if( document.getElementById ){
+        document.getElementById("levelID").innerHTML = s;
+    }
+    else {
+        document.all("levelID").innerHTML = s;
+    }
+}
+ 
+function startGameStep()
+{
+    ++m_iGameStep;
+    for(i=0;i<m_iGameStep;++i){
+        m_arrSeq[i] = getRandom(m_totalItems);
+        //alert(""+m_arrSeq[i]);
+    }
+    m_iGameMove = 0;
+    m_curIndex  = 0;
+    showMoveLevel();
+    showAll();
+}
+ 
+function giveUP()
+{
+    if(m_status != c_gameISRunning){
+        document.getElementById("cmdGiveUp").disabled = false;
+        document.getElementById("cmdStart").disabled  = true;
+        alert("Game is not running");
+    }
+    else {
+        m_status = c_gameEndGiveUp;
+        showAll();
+    }
+}
+ 
+ 
+function move(index)
+{
+    if(m_status != c_gameISRunning)return;
+    if(m_arrSeq[m_iGameMove] == index){
+        m_curIndex    = m_iGameMove;
+        m_isShowSlide = true;
+        m_status = c_gameBetweenMove;
+    }
+    else {
+        alert("You fail. This is correct sequence");
+        m_status = c_gameEndWrongMove;
+        showAll();
+    }
+}
+ 
+function nextMove()
+{
+    if(++m_iGameMove >= m_iGameStep){
+        alert("You pass the move");
+        startGameStep();
+    }
+    else {
+        m_curIndex  = m_iGameMove;
+        showMoveLevel();
+    }
+}
+ 
+ 
+function showClock()
+{
+    var digital = new Date();
+    var hours   = digital.getHours();
+    var minutes = digital.getMinutes();
+    var seconds = digital.getSeconds();
+    var amOrPm = "AM";
+    if (hours > 11) amOrPm = "PM";
+    if (hours > 12) hours = hours - 12;
+    if (hours == 0) hours = 12;
+    if (minutes <= 9) minutes = "0" + minutes;
+    if (seconds <= 9) seconds = "0" + seconds;
+    dispTime = hours + ":" + minutes + ":" + seconds + " " + amOrPm;
+ 
+    if(document.getElementById){
+            document.getElementById("timeID").innerHTML  = dispTime;
+        }
+        else {
+            document.all("timeID").innerHTML  = dispTime;
+        }
+}
+ 
+function showTheBestScore()
+{
+    var s = "The best score: <b>"+m_iBestScore+"</b>";
+    if(document.getElementById){
+            document.getElementById("bestscoreID").innerHTML  = s;
+        }
+        else {
+            document.all("bestscoreID").innerHTML  = s;
+        }
+ 
+}
+ 
+function stopSlide()
+{
+    m_isShowSlide  = false;
+    for(i=0;i<4;++i){
+        var curTabName = "t" +i;
+        if(document.getElementById){
+            document.getElementById(curTabName).bgColor="#FFFFFF";
+        }
+    }
+    if(m_status ==  c_gameEndWrongMove || m_status== c_gameEndGiveUp){
+        document.getElementById("cmdGiveUp").disabled = true;
+        document.getElementById("cmdStart").disabled  = false;
+        if(m_status ==  c_gameEndWrongMove){
+            if(m_iBestScore < m_iGameStep){
+                alert("This was your the best game");
+                m_iBestScore = m_iGameStep;
+                showTheBestScore();
+            }
+        }
+        m_status = c_gameISNotRunning;
+    }
+}
+ 
+function showSlide()
+{
+    var i = m_arrSeq[m_curIndex];
+    if(i < 0 || i >= 4)alert("Error");
+    var curImageName = "a" + i;
+    var curTabName   = "t" + i;
+    if(document.getElementById){
+        if(m_curSlide % 2 == 0)document.getElementById(curTabName).bgColor="#C0C0C0";
+        else                   document.getElementById(curTabName).bgColor="#FFFFFF";
+    }
+    if(document.getElementById){
+        if(m_curSlide % 2 == 0)document.getElementById(curImageName).src = m_img1.src;
+        else                   document.getElementById(curImageName).src = m_img2.src;
+    }
+    else {
+        if(m_curSlide % 2 == 0)document.all(curImageName).src = m_img1.src;
+        else                   document.all(curImageName).src = m_img2.src;
+    }
+    if(++m_curSlide  >= 6){
+        m_curSlide = 0;
+        return 1;
+    }
+    return 0;
+}
+ 
+ 
+function timerStep()
+{
+    if(m_slideDelay > 0){
+        --m_slideDelay;
+    }
+    else if(m_isShowSlide){
+        if(showSlide() != 0){
+            if(m_isShowAllSeq){
+                if(++m_curIndex >= m_iGameStep){
+                    m_isShowAllSeq = false;
+                    m_curIndex = 0;
+                    stopSlide();
+                }
+                else {
+                    m_slideDelay = 2;
+                }
+                showMoveLevel();
+            }
+            else {
+                stopSlide();
+                if(m_status == c_gameBetweenMove){
+                    m_status = c_gameISRunning;
+                    nextMove();
+ 
+                }
+            }
+        }
+    }
+    showClock();
+    setTimeout("timerStep()", 100);
+}
+ 
+function about()
+{
+    alert("JavaScript SG Memory 1.1\nMade By Setup Group");
+}
+ 
+ 
+</script>
+ 
+</head>
+<body onLoad="startPlay()" bgcolor="#FFFFCC">
+<div align="center">
+<h1>Memory Test</h1>
+The object of the game is to remember and repeat a sequence of events as long as possible.
+<p></p>
+<div id="levelID"></div>
+<table width="100" border="1">
+<tr height=50">
+<td align="center" OnClick="move(0)" id="t0"><img src="red-ball.gif" ID="a0" OnClick="move(0)"></td>
+<td align="center" OnClick="move(1)" id="t1"><img src="red-ball.gif" ID="a1" OnClick="move(1)"></td>
+</tr>
+<tr height="50">
+<td align="center" OnClick="move(2)" id="t2"><img src="red-ball.gif" ID="a2" OnClick="move(2)"></td>
+<td align="center" OnClick="move(3)" id="t3"><img src="red-ball.gif" ID="a3" OnClick="move(3)"></td>
+</tr>
+</table>
+ 
+<div id="bestscoreID"></div>
+<div id="timeID"></div>
+ 
+<form name="frmGame">
+<input type="button" name="cmdStart"  id="cmdStart"  value="Start"  onClick="startGame()">
+<input type="button" name="cmdGiveUp" id="cmdGiveUp" value="GiveUp" onClick="giveUP()">
+<input type="button" name="cmdAbout"  id="cmdAbout"  value="About"  onClick="about()">
+</form>
+</div>
+<div align="center">
+Made by <a target="_blank" href="http://www.setupgroup.com">Setup Group</a>
+</div>
+</body>
+</html>
