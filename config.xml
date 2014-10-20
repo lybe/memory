@@ -6,10 +6,10 @@
         id        = "gr.liverios.memory"
         version   = "1.0.0">
 
-    <name>Memory</name>
+    <name>Memory Game</name>
 
     <description>
-        Memory
+        Memory Game
     </description>
 
     <author href="http://liverios.gr/" email="liverios@liverios.gr">
